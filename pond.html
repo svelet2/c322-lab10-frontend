@@ -16,15 +16,22 @@
       <li class="right"><a  href="login.html">Login</a></li>
     </ul>
 
+    <script src="configuration.js"></script>
+
     <div id="pond"></div>
 
     <script>
-      let host = "http://localhost:8080";
+      let host = getHost();
       let ducks = [];
       displayTheDucks();
 
       async function getAll() {
-        let response = await fetch(host + "/ducks");
+        const header = {"Authorization": `Bearer ${configuration.token()}`};
+        let response = await fetch(host + "/ducks", {headers: header});
+        if (response.status === 401) {
+              message = "You are not authorized to add a guitar. Please login and try again.";
+              logout();
+        } 
         let result = await response.json();
         return result;
       }

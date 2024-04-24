@@ -14,6 +14,7 @@
       <li><a href="pond.html">Pond</a></li>
       <li class="right"><a  href="login.html">Login</a></li>
     </ul>
+    <script src="configuration.js"></script>
     <div>
       <label>Name:</label>
       <input id="name" />
@@ -24,7 +25,7 @@
       <button onclick="addTheDuck()">Add the duck</button>
     </div>
     <script>
-      let host = "http://localhost:8080";
+      let host = getHost();
           async function addTheDuck() {
               let message = "";
                 let duckName = document.getElementById("name").value;
@@ -42,7 +43,8 @@
                 let request = {
                   method: "POST",
                   headers: {
-                      "Content-Type": "application/json"
+                      "Content-Type": "application/json",
+                      "Authorization": `Bearer ${configuration.token()}`
                   },
                   body: JSON.stringify(duck)
                 };
@@ -55,7 +57,10 @@
                   } else {
                       message = "Something went wrong! Duck data was saved successfully but duck image was not saved.";
                   }
-                } else {
+                } else if (response.status === 401) {
+                    message = "You are not authorized to add a guitar. Please login and try again.";
+                    logout();
+                }  else {
                   console.log(response);
                   message = "Something went wrong! Duck data could not be saved.";
                 }
@@ -68,9 +73,14 @@
                 formData.append("file", imageInput.files[0]);
                 let request = {
                   method: "POST",
+                  headers: { "Authorization": `Bearer ${configuration.token()}` },
                   body: formData
                 };
                 let response = await fetch(host + "/ducks/" + duckId + "/image", request);
+                if (response.status === 401) {
+                    message = "You are not authorized to add a guitar. Please login and try again.";
+                    logout();
+                } 
                 let result = await response.json();
                 return result;
 
